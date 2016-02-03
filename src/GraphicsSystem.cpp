@@ -3,6 +3,7 @@
 
 #include "Game.hpp"
 #include "GraphicsSystem.hpp"
+#include "PhysicsSystem.hpp"
 
 
 GraphicsSystem::GraphicsSystem(Game *game)
@@ -81,20 +82,46 @@ void GraphicsSystem::drawEntities() {
     boundingBox.setOutlineThickness(1);
     boundingBox.setFillColor(sf::Color::Transparent);
 
-    for (Entity *entity : m_game->entities) {
-        if (entity->drawable == NULL || entity->transformation == NULL) {
-            continue;
-        }
+    renderStates.transform = sf::Transform::Identity;
 
-        renderStates.transform = sf::Transform::Identity;
-        renderStates.transform.translate(entity->transformation->position);
-        renderStates.transform.rotate(entity->transformation->rotation);
+    for (const b2Body *body = m_game->physicsSystem->getPhysicalWorld().GetBodyList(); body; body = body->GetNext()) {
+        std::cout << body->GetPosition().x << " " << body->GetPosition().y << " translated to: ";
 
-        boundingBox.setSize(sf::Vector2f(entity->drawable->boundingBox.width-2, entity->drawable->boundingBox.height-2));
-        boundingBox.setPosition(sf::Vector2f(entity->drawable->boundingBox.left, entity->drawable->boundingBox.top));
+        float x = body->GetPosition().x * 25;
+        float y = body->GetPosition().y * 25;
+
+        x = x + 300;
+        y = y + 100;
+
+        y = 200 - y;
+
+        // const b2Shape *shape = body->GetFixtureList()->GetShape();
+        boundingBox.setSize(sf::Vector2f(40, 40));
+        boundingBox.setPosition(sf::Vector2f(x, y));
+
+        std::cout << x << " " << y << std::endl;
 
         m_window.draw(boundingBox, renderStates);
     }
+
+    std::cout << std::endl;
+
+    // for (Entity *entity : m_game->entities) {
+    //     if (entity->drawable == NULL || entity->transformation == NULL) {
+    //         continue;
+    //     }
+
+    //     renderStates.transform = sf::Transform::Identity;
+    //     renderStates.transform.translate(entity->transformation->position);
+    //     renderStates.transform.rotate(entity->transformation->rotation);
+
+    //     boundingBox.setSize(sf::Vector2f(entity->drawable->boundingBox.width-2, entity->drawable->boundingBox.height-2));
+    //     boundingBox.setPosition(sf::Vector2f(entity->drawable->boundingBox.left, entity->drawable->boundingBox.top));
+
+    //     m_window.draw(boundingBox, renderStates);
+    // }
+
+
 }
 
 void GraphicsSystem::update(float timeDelta) {

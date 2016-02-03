@@ -1,18 +1,18 @@
 #pragma once
 
+#include <Box2D/Box2D.h>
+
 #include "Process.hpp"
 
 class Game;
 
-struct Collision {
-
-};
-
 class PhysicsSystem : public Process {
-    bool checkCollision(Entity *entity, Entity *otherEntity, Collision& collision);
+	b2World *m_physicalWorld;
 public:
     PhysicsSystem(Game *game);
     ~PhysicsSystem();
+
+    const b2World& getPhysicalWorld() const { return *m_physicalWorld; };
 
     virtual void update(float timeDelta);
 };

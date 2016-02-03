@@ -9,33 +9,36 @@
 Game::Game()
     : isRunning(false)
 {
-    systems.push_back(new InputSystem(this));
-    systems.push_back(new LogicSystem(this));
-    systems.push_back(new PhysicsSystem(this));
-    systems.push_back(new GraphicsSystem(this));
+    // systems.push_back(new InputSystem(this));
+    // systems.push_back(new LogicSystem(this));
 
-    playerEntityId = 0;
-    entities.push_back(new Player(this));
-    entities[0]->drawable = new Drawable();
-    entities[0]->drawable->boundingBox = sf::FloatRect(-25, -100, 50, 100);
-    entities[0]->drawable->collidingLayers = LAYER_STATIC_COLLIDABLE;
-    entities[0]->drawable->layer = LAYER_PLAYER;
-    entities[0]->transformation = new Transformation();
-    entities[0]->transformation->position = sf::Vector2f(400, 350);
+    physicsSystem = new PhysicsSystem(this);
+    graphicsSystem = new GraphicsSystem(this);
+    systems.push_back(physicsSystem);
+    systems.push_back(graphicsSystem);
 
-    entities.push_back(new Entity(this));
-    entities[1]->drawable = new Drawable();
-    entities[1]->drawable->boundingBox = sf::FloatRect(0, 0, 500, 50);
-    entities[1]->drawable->layer = LAYER_STATIC_COLLIDABLE;
-    entities[1]->transformation = new Transformation();
-    entities[1]->transformation->position = sf::Vector2f(0, 351);
+    // playerEntityId = 0;
+    // entities.push_back(new Player(this));
+    // entities[0]->drawable = new Drawable();
+    // entities[0]->drawable->boundingBox = sf::FloatRect(-25, -100, 50, 100);
+    // entities[0]->drawable->collidingLayers = LAYER_STATIC_COLLIDABLE;
+    // entities[0]->drawable->layer = LAYER_PLAYER;
+    // entities[0]->transformation = new Transformation();
+    // entities[0]->transformation->position = sf::Vector2f(400, 350);
 
-    entities.push_back(new Entity(this));
-    entities[2]->drawable = new Drawable();
-    entities[2]->drawable->boundingBox = sf::FloatRect(0, 0, 500, 100);
-    entities[2]->drawable->layer = LAYER_STATIC_COLLIDABLE;
-    entities[2]->transformation = new Transformation();
-    entities[2]->transformation->position = sf::Vector2f(501, 301);
+    // entities.push_back(new Entity(this));
+    // entities[1]->drawable = new Drawable();
+    // entities[1]->drawable->boundingBox = sf::FloatRect(0, 0, 500, 50);
+    // entities[1]->drawable->layer = LAYER_STATIC_COLLIDABLE;
+    // entities[1]->transformation = new Transformation();
+    // entities[1]->transformation->position = sf::Vector2f(0, 351);
+
+    // entities.push_back(new Entity(this));
+    // entities[2]->drawable = new Drawable();
+    // entities[2]->drawable->boundingBox = sf::FloatRect(0, 0, 500, 100);
+    // entities[2]->drawable->layer = LAYER_STATIC_COLLIDABLE;
+    // entities[2]->transformation = new Transformation();
+    // entities[2]->transformation->position = sf::Vector2f(501, 301);
 
     // entities[0]->transformation->positionalVelocity = sf::Vector2f(50, -250);
     // entities[0]->transformation->positionalAcceleration = sf::Vector2f(-12.5, 125);
@@ -63,6 +66,7 @@ void Game::run() {
     isRunning = true;
     clock.restart();
 
+    // for (unsigned int i=0; i<25; i++) {
     while (isRunning) {
         sleep(MIN_FRAME_DELAY);
         float timeDelta = clock.restart().asMilliseconds() / 1000.0;
