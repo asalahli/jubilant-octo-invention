@@ -5,7 +5,7 @@
 Entity::Entity(Game *game)
     : Process(game)
     , drawable(NULL)
-    , transformation(NULL)
+    , physicalBody(NULL)
 {
 
 }
@@ -13,9 +13,5 @@ Entity::Entity(Game *game)
 Entity::~Entity() {
     if (drawable != NULL) {
         delete drawable;
-    }
-
-    if (transformation != NULL) {
-        delete transformation;
     }
 }

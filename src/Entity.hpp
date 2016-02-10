@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Box2D/Box2D.h>
+
 #include "Component.hpp"
 #include "Process.hpp"
 
@@ -9,7 +11,7 @@ class Game;
 class Entity : public Process {
 public:
     Drawable *drawable;
-    Transformation *transformation;
+	b2Body *physicalBody;
 
     Entity(Game *game);
     ~Entity();

@@ -9,41 +9,59 @@
 Game::Game()
     : isRunning(false)
 {
-    // systems.push_back(new InputSystem(this));
-    // systems.push_back(new LogicSystem(this));
+    systems.push_back(new InputSystem(this));
+    systems.push_back(new LogicSystem(this));
+    systems.push_back(new PhysicsSystem(this));
+    systems.push_back(new GraphicsSystem(this));
 
-    physicsSystem = new PhysicsSystem(this);
-    graphicsSystem = new GraphicsSystem(this);
-    systems.push_back(physicsSystem);
-    systems.push_back(graphicsSystem);
+    playerEntityId = 0;
 
-    // playerEntityId = 0;
-    // entities.push_back(new Player(this));
-    // entities[0]->drawable = new Drawable();
-    // entities[0]->drawable->boundingBox = sf::FloatRect(-25, -100, 50, 100);
-    // entities[0]->drawable->collidingLayers = LAYER_STATIC_COLLIDABLE;
-    // entities[0]->drawable->layer = LAYER_PLAYER;
-    // entities[0]->transformation = new Transformation();
-    // entities[0]->transformation->position = sf::Vector2f(400, 350);
+    entities.push_back(new Player(this));
+    {
+        b2BodyDef bodyDef;
+        bodyDef.type = b2_dynamicBody;
+        bodyDef.allowSleep = false;
+        bodyDef.bullet = true;
+        bodyDef.position.Set(-6.0f, 4.0f);
+        bodyDef.fixedRotation = true;
+        entities[0]->physicalBody = physicalWorld->CreateBody(&bodyDef);
 
-    // entities.push_back(new Entity(this));
-    // entities[1]->drawable = new Drawable();
-    // entities[1]->drawable->boundingBox = sf::FloatRect(0, 0, 500, 50);
-    // entities[1]->drawable->layer = LAYER_STATIC_COLLIDABLE;
-    // entities[1]->transformation = new Transformation();
-    // entities[1]->transformation->position = sf::Vector2f(0, 351);
+        b2PolygonShape dynamicBox;
+        dynamicBox.SetAsBox(0.5f, 1.0f, b2Vec2(0.0f, 1.0f), 0);
 
-    // entities.push_back(new Entity(this));
-    // entities[2]->drawable = new Drawable();
-    // entities[2]->drawable->boundingBox = sf::FloatRect(0, 0, 500, 100);
-    // entities[2]->drawable->layer = LAYER_STATIC_COLLIDABLE;
-    // entities[2]->transformation = new Transformation();
-    // entities[2]->transformation->position = sf::Vector2f(501, 301);
+        b2FixtureDef fixtureDef;
+        fixtureDef.shape = &dynamicBox;
+        fixtureDef.density = 1.0f;
+        fixtureDef.friction = 0.3f;
 
-    // entities[0]->transformation->positionalVelocity = sf::Vector2f(50, -250);
-    // entities[0]->transformation->positionalAcceleration = sf::Vector2f(-12.5, 125);
-    // entities[0]->transformation->rotationalVelocity = 60;
-    // entities[0]->transformation->rotationalAcceleration = -30;
+        entities[0]->physicalBody->CreateFixture(&fixtureDef);
+    }
+
+    entities.push_back(new Entity(this));
+    {
+        b2BodyDef groundBodyDef;
+        groundBodyDef.position.Set(-10.0f, 0.0f);
+
+        entities[1]->physicalBody = physicalWorld->CreateBody(&groundBodyDef);
+
+        b2PolygonShape groundBox;
+        groundBox.SetAsBox(5.0f, 0.5f, b2Vec2(5.0f, -0.5f), 0);
+
+        entities[1]->physicalBody->CreateFixture(&groundBox, 0.0f);
+    }
+
+    entities.push_back(new Entity(this));
+    {
+        b2BodyDef groundBodyDef;
+        groundBodyDef.position.Set(0.0f, 1.0f);
+
+        entities[2]->physicalBody = physicalWorld->CreateBody(&groundBodyDef);
+
+        b2PolygonShape groundBox;
+        groundBox.SetAsBox(5.0f, 1.0f, b2Vec2(5.0f, -1.0f), 0);
+
+        entities[2]->physicalBody->CreateFixture(&groundBox, 0.0f);
+    }
 }
 
 Game::~Game() {
@@ -53,6 +71,10 @@ Game::~Game() {
 
     for (Entity *entity : entities) {
         delete entity;
+    }
+
+    if (physicalWorld) {
+        delete physicalWorld;
     }
 }
 

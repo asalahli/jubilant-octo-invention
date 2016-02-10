@@ -2,7 +2,8 @@
 #include "Player.hpp"
 
 
-const float Player::SPEED = 150;
+const float Player::SPEED = 3.0f;
+const float Player::JUMP_COOLDOWN = 1.0f;
 
 Player::Player(Game *game)
     : Entity(game)
@@ -11,6 +12,10 @@ Player::Player(Game *game)
 }
 
 void Player::update(float timeDelta) {
+    if (jumpCooldown > 0) {
+        jumpCooldown -= timeDelta;
+    }
+
     bool shouldMoveLeft = false, shouldMoveRight = false, shouldJump = false;
 
     for (unsigned int message : m_game->messages) {
@@ -28,17 +33,28 @@ void Player::update(float timeDelta) {
     }
 
     if (shouldMoveLeft && !shouldMoveRight) {
-        transformation->positionalVelocity.x = -this->SPEED;
+        physicalBody->SetLinearVelocity(b2Vec2(-this->SPEED, physicalBody->GetLinearVelocity().y));
     }
     else if (shouldMoveRight && !shouldMoveLeft) {
-        transformation->positionalVelocity.x = this->SPEED;
+        physicalBody->SetLinearVelocity(b2Vec2(this->SPEED, physicalBody->GetLinearVelocity().y));
     }
     else {
-        transformation->positionalVelocity.x = 0;
+        physicalBody->SetLinearVelocity(b2Vec2(0.0f, physicalBody->GetLinearVelocity().y));
     }
 
-    if (shouldJump && transformation->position.y == 350) {
-        transformation->positionalVelocity.y = -250;
-        transformation->positionalAcceleration.y = 200;
+    if (shouldJump) {
+        bool canJump = false;
+        for (const b2ContactEdge *contact = physicalBody->GetContactList(); contact; contact = contact->next) {
+            if (contact->contact->IsTouching() && contact->other->GetPosition().y <= physicalBody->GetPosition().y) {
+                canJump = true;
+                break;
+            }
+        }
+
+        if (canJump && jumpCooldown <= 0) {
+            jumpCooldown = this->JUMP_COOLDOWN;
+            std::cout << "Jumping" << std::endl;
+            physicalBody->ApplyForceToCenter(b2Vec2(0.0f, 300.0f), true);
+        }
     }
 }

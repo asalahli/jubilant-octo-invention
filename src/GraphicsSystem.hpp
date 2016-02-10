@@ -10,6 +10,9 @@ class GraphicsSystem : public Process {
     sf::Font *m_debuggerFont;
     sf::RenderWindow m_window;
 
+    sf::Vector2f cameraPosition;
+    float viewportSize;
+
     void clearWindow();
     void drawDebug(float timeDelta);
     void drawEntities();

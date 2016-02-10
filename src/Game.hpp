@@ -25,12 +25,10 @@ public:
     std::vector<Entity *> entities;
     bool isRunning;
     std::vector<unsigned int> messages;
+    b2World *physicalWorld;
     unsigned int playerEntityId;
     ResourceManager resourceManager;
     std::list<Process *> systems;
-
-    GraphicsSystem *graphicsSystem;
-    PhysicsSystem *physicsSystem;
 
     Game();
     ~Game();
