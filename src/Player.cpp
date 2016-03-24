@@ -53,7 +53,6 @@ void Player::update(float timeDelta) {
 
         if (canJump && jumpCooldown <= 0) {
             jumpCooldown = this->JUMP_COOLDOWN;
-            std::cout << "Jumping" << std::endl;
             physicalBody->ApplyForceToCenter(b2Vec2(0.0f, 300.0f), true);
         }
     }

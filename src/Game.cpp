@@ -1,9 +1,12 @@
 #include "Game.hpp"
+#include "AnimationSystem.hpp"
 #include "GraphicsSystem.hpp"
 #include "InputSystem.hpp"
 #include "LogicSystem.hpp"
 #include "PhysicsSystem.hpp"
 #include "Player.hpp"
+
+#include "../res/animations/WalkingAnimation.h"
 
 
 Game::Game()
@@ -11,6 +14,7 @@ Game::Game()
 {
     systems.push_back(new InputSystem(this));
     systems.push_back(new LogicSystem(this));
+    systems.push_back(new AnimationSystem(this));
     systems.push_back(new PhysicsSystem(this));
     systems.push_back(new GraphicsSystem(this));
 
@@ -35,6 +39,17 @@ Game::Game()
         fixtureDef.friction = 0.3f;
 
         entities[0]->physicalBody->CreateFixture(&fixtureDef);
+
+
+        entities[0]->skeleton = new Skeleton();
+        setWalkingAnimation(entities[0]);
+
+        // entities[0]->animation = new Animation();
+        // entities[0]->animation->keyFrames.resize(5);
+        // entities[0]->animation->keyFrames[1].push(KeyFrame(0.0f, 5.0f, Bone(1, 0.5f, 180)));
+        // entities[0]->animation->keyFrames[1].push(KeyFrame(0.0f, 5.0f, Bone(1, 0.5f, 225)));
+        // entities[0]->animation->keyFrames[2].push(KeyFrame(0.0f, 10.0f, Bone(2, 0.5f, 405)));
+        // entities[0]->animation->keyFrames[4].push(KeyFrame(0.0f, 10.0f, Bone(4, 0.2f, 60)));
     }
 
     entities.push_back(new Entity(this));
@@ -91,7 +106,7 @@ void Game::run() {
     // for (unsigned int i=0; i<25; i++) {
     while (isRunning) {
         sleep(MIN_FRAME_DELAY);
-        float timeDelta = clock.restart().asMilliseconds() / 1000.0;
+        float timeDelta = clock.restart().asMilliseconds() / 1000.0f;
 
         messages.clear();
 

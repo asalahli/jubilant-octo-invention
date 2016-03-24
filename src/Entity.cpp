@@ -6,6 +6,8 @@ Entity::Entity(Game *game)
     : Process(game)
     , drawable(NULL)
     , physicalBody(NULL)
+    , skeleton(NULL)
+    , animation(NULL)
 {
 
 }

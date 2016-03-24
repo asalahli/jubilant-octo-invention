@@ -1,5 +1,5 @@
-// #include <cmath>
 #include <sstream>
+#include <string>
 
 #include "Game.hpp"
 #include "GraphicsSystem.hpp"
@@ -11,7 +11,7 @@ GraphicsSystem::GraphicsSystem(Game *game)
     , cameraPosition(0.0f, 2.5f)
     , viewportSize(9)
 {
-    // m_debuggerFont = m_game->resourceManager.loadFont("UbuntuMono-R.ttf");
+    m_debuggerFont = m_game->resourceManager.loadFont("UbuntuMono-R.ttf");
     m_window.create(sf::VideoMode(800, 450), "SFML works!", sf::Style::Close | sf::Style::Titlebar);
 }
 
@@ -26,47 +26,51 @@ void GraphicsSystem::drawGrid() {
     line.setFillColor(sf::Color(150, 150, 150));
 
     for (unsigned int i = 50; i < m_window.getSize().x; i += 50) {
-        line.setPosition(sf::Vector2f(i-1, 0));
-        line.setSize(sf::Vector2f(1, m_window.getSize().y));
+        line.setPosition(sf::Vector2f(i-1.0f, 0.0f));
+        line.setSize(sf::Vector2f(1.0f, m_window.getSize().y * 1.0f));
         m_window.draw(line);
     }
 
     for (unsigned int i = 50; i < m_window.getSize().y; i += 50) {
-        line.setPosition(sf::Vector2f(0, i-1));
-        line.setSize(sf::Vector2f(m_window.getSize().x, 1));
+        line.setPosition(sf::Vector2f(0.0f, i-1.0f));
+        line.setSize(sf::Vector2f(m_window.getSize().x * 1.0f, 1.0f));
         m_window.draw(line);
     }
 }
 
 void GraphicsSystem::drawDebug(float timeDelta) {
-    // sf::Vector2i mousePosition = sf::Mouse::getPosition(m_window);
+    sf::Vector2i mousePosition = sf::Mouse::getPosition(m_window);
 
-    // std::stringstream ss;
-    // ss << "-:-" << mousePosition.x << "," << mousePosition.y << "    " << floor(1/timeDelta) << " fps";
+    std::stringstream ss;
+    ss << "-:-" << mousePosition.x << "," << mousePosition.y << "    " << floor(1/timeDelta) << " fps";
 
-    // std::string leftSide = "a";
-    // std::string rightSide = ss.str();
-    // std::string padding;
+    std::string leftSide = "a";
+    std::string rightSide = ss.str();
+    std::string padding;
 
-    // for (unsigned int i = 0; i < 113-(leftSide.length() + rightSide.length()); i++) {
-    //     padding += " ";
-    // }
+    for (unsigned int i = 0; i < 113-(leftSide.length() + rightSide.length()); i++) {
+        padding += " ";
+    }
 
-    // sf::RectangleShape panel;
-    // sf::Text text;
+    ss.str("");
+    ss << leftSide << padding << rightSide;
+    std::string debugText = ss.str();
 
-    // panel.setFillColor(sf::Color(200, 200, 200));
-    // panel.setPosition(sf::Vector2f(0, 430));
-    // panel.setSize(sf::Vector2f(800, 20));
+    sf::RectangleShape panel;
+    sf::Text text;
 
-    // // text.setFont(*m_debuggerFont);
-    // text.setString(leftSide + padding + rightSide);
-    // text.setCharacterSize(14);
-    // text.setColor(sf::Color::Black);
-    // text.setPosition(sf::Vector2f(4, 431));
+    panel.setFillColor(sf::Color(200, 200, 200));
+    panel.setPosition(sf::Vector2f(0, 430));
+    panel.setSize(sf::Vector2f(800, 20));
 
-    // m_window.draw(panel);
-    // // m_window.draw(text);
+    text.setFont(*m_debuggerFont);
+	text.setString(debugText);
+	text.setCharacterSize(14);
+    text.setColor(sf::Color::Black);
+    text.setPosition(sf::Vector2f(4, 431));
+
+    m_window.draw(panel);
+    m_window.draw(text);
 }
 
 void GraphicsSystem::clearWindow() {
@@ -74,6 +78,42 @@ void GraphicsSystem::clearWindow() {
     sf::RectangleShape bg(sf::Vector2f(m_window.getSize()));
     bg.setFillColor(sf::Color(50, 50, 50));
     m_window.draw(bg);
+}
+
+void GraphicsSystem::drawBoundingBox(const b2Body& physicalBody, const sf::Transform& currentTransform) {
+    const b2PolygonShape *shape = (b2PolygonShape *) physicalBody.GetFixtureList()->GetShape();
+
+    sf::Vertex boundingBox[5];
+    for (unsigned int i=0; i<4; i++) {
+        boundingBox[i].position = sf::Vector2f(shape->m_vertices[i].x, shape->m_vertices[i].y);
+        boundingBox[i].color = sf::Color::Green;
+    }
+
+    boundingBox[4] = boundingBox[0];
+    m_window.draw(boundingBox, 5, sf::LinesStrip, currentTransform);
+}
+
+void GraphicsSystem::drawSkeleton(const Skeleton& skeleton, const unsigned int boneId, const sf::Transform& currentTransform) {
+    sf::Vertex boneBox[5];
+
+    boneBox[0] = sf::Vertex(sf::Vector2f(0.0f, 0.05f), sf::Color::Red);
+    boneBox[1] = sf::Vertex(sf::Vector2f(skeleton.bones[boneId].length, 0.05f), sf::Color::Red);
+    boneBox[2] = sf::Vertex(sf::Vector2f(skeleton.bones[boneId].length, -0.05f), sf::Color::Red);
+    boneBox[3] = sf::Vertex(sf::Vector2f(0.0f, -0.05f), sf::Color::Red);
+    boneBox[4] = boneBox[0];
+
+    sf::Transform boneTransform(currentTransform);
+    boneTransform.rotate(skeleton.bones[boneId].rotation);
+
+    m_window.draw(boneBox, 5, sf::LinesStrip, boneTransform);
+
+    sf::Vector2f newOrigin = sf::Transform().rotate(skeleton.bones[boneId].rotation).transformPoint(skeleton.bones[boneId].length, 0.0f);
+    sf::Transform newTransform(currentTransform);
+    newTransform.translate(newOrigin);
+
+    for (unsigned int childBoneId : skeleton.bones[boneId].children) {
+        drawSkeleton(skeleton, childBoneId, newTransform);
+    }
 }
 
 void GraphicsSystem::drawEntities() {
@@ -84,66 +124,36 @@ void GraphicsSystem::drawEntities() {
         float playerPos = m_game->entities[m_game->playerEntityId]->physicalBody->GetPosition().x - cameraPosition.x;
 
         if (playerPos < 0 && (w / 2.0) + playerPos < 3) {
-            cameraPosition.x -= 3 - (w / 2.0) - playerPos;
+            cameraPosition.x -= 3 - (w / 2.0f) - playerPos;
         }
         else if (playerPos > 0 && (w / 2.0) - playerPos < 3) {
-            cameraPosition.x += 3 - (w / 2.0) + playerPos;
+            cameraPosition.x += 3 - (w / 2.0f) + playerPos;
         }
     }
 
     sf::Vector2f cameraTranslation = cameraPosition - sf::Vector2f(w / 2.0f, h / 2.0f);
     float cameraScale = m_window.getSize().y / h;
 
-    // std::cout << "cameraTranslation = (" << cameraTranslation.x << ", " << cameraTranslation.y << ")" << std::endl;
-    // std::cout << "cameraScale = " << cameraScale << std::endl;
+    sf::Transform viewTransform = sf::Transform(sf::Transform::Identity)
+        .translate(0, m_window.getSize().y * 1.0f)
+        .scale(cameraScale, -cameraScale)
+        .translate(-cameraTranslation);
 
-    sf::Vertex boundingBox[5];
-
-    sf::RenderStates renderStates;
-
-    renderStates.transform = sf::Transform::Identity;
-
-    for (const b2Body *body = m_game->physicalWorld->GetBodyList(); body; body = body->GetNext()) {
-        float x = body->GetPosition().x;
-        float y = body->GetPosition().y;
-
-        const b2PolygonShape *shape = (b2PolygonShape *) body->GetFixtureList()->GetShape();
-
-        for (unsigned int i=0; i<4; i++) {
-            boundingBox[i].position = sf::Vector2f(x + shape->m_vertices[i].x, y + shape->m_vertices[i].y);
-            boundingBox[i].color = sf::Color::Green;
+    for (Entity *entity : m_game->entities) {
+        if (entity->physicalBody == NULL) {
+            continue;
         }
 
-        // std::cout << boundingBox[0].position.x << " " << boundingBox[0].position.y << " translates to: ";
+        b2Vec2 entityPosition = entity->physicalBody->GetPosition();
+        sf::Transform modelTransform(viewTransform);
+        modelTransform.translate(entityPosition.x, entityPosition.y);
 
-        for (unsigned int i=0; i<4; i++) {
-            boundingBox[i].position = (boundingBox[i].position - cameraTranslation) * cameraScale;
-            boundingBox[i].position.y = m_window.getSize().y - boundingBox[i].position.y;
+        drawBoundingBox(*entity->physicalBody, modelTransform);
+
+        if (entity->skeleton != NULL) {
+            drawSkeleton(*entity->skeleton, 0, modelTransform * sf::Transform().translate(entity->skeleton->origin));
         }
-
-        boundingBox[4] = boundingBox[0];
-        m_window.draw(boundingBox, 5, sf::LinesStrip, renderStates);
-        // std::cout << boundingBox[0].position.x << " " << boundingBox[0].position.y << std::endl;
     }
-
-    // std::cout << std::endl;
-
-    // for (Entity *entity : m_game->entities) {
-    //     if (entity->drawable == NULL || entity->transformation == NULL) {
-    //         continue;
-    //     }
-
-    //     renderStates.transform = sf::Transform::Identity;
-    //     renderStates.transform.translate(entity->transformation->position);
-    //     renderStates.transform.rotate(entity->transformation->rotation);
-
-    //     boundingBox.setSize(sf::Vector2f(entity->drawable->boundingBox.width-2, entity->drawable->boundingBox.height-2));
-    //     boundingBox.setPosition(sf::Vector2f(entity->drawable->boundingBox.left, entity->drawable->boundingBox.top));
-
-    //     m_window.draw(boundingBox, renderStates);
-    // }
-
-
 }
 
 void GraphicsSystem::update(float timeDelta) {

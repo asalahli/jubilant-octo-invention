@@ -12,6 +12,8 @@ class Entity : public Process {
 public:
     Drawable *drawable;
 	b2Body *physicalBody;
+    Skeleton *skeleton;
+    Animation *animation;
 
     Entity(Game *game);
     ~Entity();

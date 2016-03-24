@@ -55,7 +55,7 @@ void PhysicsSystem::update(float timeDelta) {
     //     }
     // }
 
-    float timeStep = MIN_FRAME_DELAY / 1000.0;
+    float timeStep = MIN_FRAME_DELAY / 1000.0f;
 
     int32 velocityIterations = 6;
     int32 positionIterations = 2;
