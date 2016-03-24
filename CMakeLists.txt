@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.4)
 project (Game)
 
 if (UNIX)
-    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++0x -g -fkeep-inline-functions")
+    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++0x -g")
     set(PROJECT_LINK_LIBS sfml-window sfml-graphics sfml-system Box2D)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/dist/linux")
 endif (UNIX)

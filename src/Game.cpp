@@ -8,6 +8,7 @@
 
 #include "../res/animations/WalkingAnimation.h"
 
+bool DEBUG_isMouseClicked = false;
 
 Game::Game()
     : isRunning(false)
@@ -26,7 +27,7 @@ Game::Game()
         bodyDef.type = b2_dynamicBody;
         bodyDef.allowSleep = false;
         bodyDef.bullet = true;
-        bodyDef.position.Set(-6.0f, 4.0f);
+        bodyDef.position.Set(-6.0f, 1.0f);
         bodyDef.fixedRotation = true;
         entities[0]->physicalBody = physicalWorld->CreateBody(&bodyDef);
 
@@ -40,8 +41,8 @@ Game::Game()
 
         entities[0]->physicalBody->CreateFixture(&fixtureDef);
 
-
         entities[0]->skeleton = new Skeleton();
+        entities[0]->animation = new Animation();
         setWalkingAnimation(entities[0]);
 
         // entities[0]->animation = new Animation();

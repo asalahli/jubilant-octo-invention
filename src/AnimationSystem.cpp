@@ -29,8 +29,14 @@ void AnimationSystem::animateBone(Bone& bone, KeyFrame& keyFrame, float timeDelt
 void AnimationSystem::animateEntity(Entity *entity, float timeDelta) {
     float originalTimeDelta = timeDelta;
 
+    // std::cout << "Before animation: " << entity->animation->keyFrames[7].size() << " key frames. ";
+    // std::cout << entity->animation->keyFrames[7].front().currentTime << " elapsed.";
+    // std::cout << std::endl;
+
     for (Bone& currentBone : entity->skeleton->bones) {
         const unsigned int boneId = currentBone.id;
+
+        // std::cout << "Bone " << boneId << " was " << currentBone.rotation;
 
         KeyFrameQueue& keyFrameQueue = entity->animation->keyFrames[boneId];
 
@@ -40,7 +46,7 @@ void AnimationSystem::animateEntity(Entity *entity, float timeDelta) {
 
             animateBone(currentBone, currentKeyFrame, timeDelta);
 
-            if (currentKeyFrame.currentTime > currentKeyFrame.finishTime) {
+            if (currentKeyFrame.currentTime >= currentKeyFrame.finishTime) {
                 timeDelta = currentKeyFrame.currentTime - currentKeyFrame.finishTime;
                 keyFrameQueue.pop();
             }
@@ -48,7 +54,14 @@ void AnimationSystem::animateEntity(Entity *entity, float timeDelta) {
                 timeDelta = 0;
             }
         }
+
+        // std::cout << ", is now " << currentBone.rotation << std::endl;
     }
+
+    // std::cout << "After animation: " << entity->animation->keyFrames[7].size() << " key frames. ";
+    // std::cout << entity->animation->keyFrames[7].front().currentTime << " elapsed.";
+    // std::cout << std::endl;
+
 }
 
 void AnimationSystem::update(float timeDelta) {
@@ -56,6 +69,16 @@ void AnimationSystem::update(float timeDelta) {
         if (entity->animation == NULL || entity->skeleton == NULL) {
             return;
         }
+
+        //
+        //  For debugging purposes
+        //
+        // if (DEBUG_isMouseClicked) {
+        //     std::cout << "animation system: mouse clicked" << std::endl;
+        //     animateEntity(entity, 0.125f);
+        //     std::cout << std::endl;
+        // }
+        // continue;
 
         animateEntity(entity, timeDelta);
     }

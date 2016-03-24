@@ -157,11 +157,20 @@ void GraphicsSystem::drawEntities() {
 }
 
 void GraphicsSystem::update(float timeDelta) {
+    DEBUG_isMouseClicked = false;
+
     sf::Event event;
     if (m_window.pollEvent(event)) {
         if (event.type == sf::Event::Closed) {
             m_game->isRunning = false;
         }
+        // if (event.type == sf::Event::MouseButtonReleased) {
+        //     //
+        //     //  For debugging purposes
+        //     //
+        //     std::cout << "graphics system:  mouse clicked" << std::endl;
+        //     DEBUG_isMouseClicked = true;
+        // }
     }
 
     clearWindow();

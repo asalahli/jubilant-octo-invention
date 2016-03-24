@@ -11,9 +11,11 @@
 
 const int MIN_FRAME_DELAY = 40;
 
-const unsigned int MSG_MOVE_LEFT = 0;
-const unsigned int MSG_MOVE_RIGHT = 1;
-const unsigned int MSG_JUMP = 2;
+const unsigned int MSG_MOVE_LEFT    = 0;
+const unsigned int MSG_MOVE_RIGHT   = 1;
+const unsigned int MSG_JUMP         = 2;
+
+extern bool DEBUG_isMouseClicked;
 
 class GraphicsSystem;
 class PhysicsSystem;
