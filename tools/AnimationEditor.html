@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/knockout/knockout-3.3.0.js"></script>
+
+<style>
+h4
+{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 4px;
+    border-bottom: 1px solid #888;
+    width: 100%;
+}
+
+#bone-list
+{
+    background-color: #eee;
+    float: right;
+    width: 250px;
+    border: 1px solid #888;
+}
+
+#keyframe-list
+{
+    background-color: #eee;
+    float: left;
+    width: 250px;
+    border: 1px solid #888;
+}
+
+#bone-list .create-button,
+#keyframe-list .create-button
+{
+    width: 100%;
+}
+
+#bone-list ul,
+#keyframe-list ul
+{
+    width: 100%;
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+    display: inline-block;
+}
+
+#bone-list ul li,
+#keyframe-list ul li
+{
+    box-sizing: border-box;
+    width: 100%;
+    padding: 16px;
+    display: inline-block;
+    border: 1px solid #eee;
+}
+
+#bone-list ul li .remove-button,
+#keyframe-list ul li .remove-button
+{
+    float: right;
+}
+
+#bone-list ul li input,
+#bone-list ul li select
+{
+    width: 80%;
+    margin-top: 16px;
+}
+
+#keyframe-list ul li input[type='number']
+{
+    width: 60%;
+}
+
+#keyframe-list ul li input[type='radio']
+{
+    width: 10%;
+}
+
+#bone-list ul li .title
+{
+    font-weight: bold;
+}
+
+#display
+{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: -100;
+}
+
+#display .inner
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    overflow: visible;
+}
+</style>
+
+<script>
+
+
+var animation = {
+    bones: ko.observableArray(),
+    keyframes: ko.observableArray(),
+    activeKeyframe: ko.observable(0),
+
+    zoomFactor: ko.observable(200),
+
+    addBone: function(self) {
+        self.bones.push({
+            name: ko.observable(""),
+            parent: ko.observable("ROOT"),
+            length: ko.observable(0),
+            rotation: ko.observable(0),
+        });
+    },
+
+    removeBone: function(bone) {
+        this.bones.remove(bone)
+    },
+
+    addKeyFrame: function(self) {
+        self.keyframes.push({
+            duration: ko.observable(0.0),
+            bones: ko.observable({}),
+        });
+    },
+
+    removeKeyframe: function(keyframe) {
+        this.keyframes.remove(keyframe);
+    },
+
+    // removeBone: function(a, b, c, d, e) {
+    //     console.log(this, a, b, c, d, e);
+    // },
+};
+
+animation.activeKeyframe.subscribe(function(activeKeyframe) {
+    console.log('new active keyframe: ', activeKeyframe);
+});
+
+var renderBone = function(animation, display, bones, boneId, x, y) {
+    var div = document.createElement('div');
+
+    var color, length, rotation;
+    if (bones[boneId].name() === "ROOT") {
+        color = "red";
+        length = 0.05;
+        rotation = 0;
+    }
+    else {
+        color = "green";
+        length = bones[boneId].length();
+        rotation = bones[boneId].rotation();
+    }
+
+    div.style.position = "absolute";
+    div.style.border = "1px solid " + color;
+    div.style.left = (x * animation.zoomFactor()).toString() + "px";
+    div.style.top = (y * animation.zoomFactor()).toString() + "px";
+    div.style.height = (0.05 * animation.zoomFactor()).toString() + "px";
+    div.style.width = (length * animation.zoomFactor()).toString() + "px";
+    div.style.transform = "rotate(" + -rotation + "deg)";
+    div.style.transformOrigin = (0.025 * animation.zoomFactor()).toString() + "px center 0";
+
+    display.appendChild(div);
+
+    var rad = (rotation / 180.0) * Math.PI;
+    var newx = x + (Math.cos(rad) * length);
+    var newy = y - (Math.sin(rad) * length);
+
+    if (bones[boneId].name() == "ROOT") {
+        newx = 0;
+        newy = 0;
+    }
+
+    for (var i=0; i<bones.length; i++) {
+        if (bones[i].parent() === bones[boneId].name() && bones[i].name() !== "ROOT") {
+            renderBone(animation, display, bones, i, newx, newy);
+        }
+    }
+};
+
+var render = function(animation) {
+    var display = document.getElementById('display').getElementsByClassName('inner')[0];
+    var bones = animation.bones();
+
+    for (var i=0; i<bones.length; i++) {
+        if (bones[i].name() === 'ROOT') {
+            break;
+        }
+    }
+
+    if (i >= bones.length) {
+        console.error('Could not find ROOT bone.');
+        return;
+    }
+
+    display.innerHTML = null;
+    renderBone(animation, display, bones, i, 0, 0);
+};
+
+</script>
+
+</head>
+<body>
+
+    <div id="keyframe-list">
+        <h4>Key Frames</h4>
+        <ul data-bind="foreach: keyframes">
+            <li>
+                <span data-bind="text: $index()+1"></span>.&nbsp;
+                <input type="number" placeholder="duration" data-bind="value: duration">
+                <input type="radio" name="active-keyframe" data-bind="value: $index, checked: $root.activeKeyframe">
+                <button class="remove-button" data-bind="enable: $index() !== 0, click: $root.removeKeyframe.bind($root, $data)">x</button>
+            </li>
+        </ul>
+        <button class="create-button" data-bind="click: $root.addKeyFrame">New</button>
+    </div>
+
+    <div id="bone-list">
+        <h4>Bones</h4>
+        <ul data-bind="foreach: bones">
+            <li>
+                <input type="text" class="title" data-bind="value: name" placeholder="name"></span>
+                <button class="remove-button" data-bind="enable: name() !== 'ROOT', click: $root.removeBone.bind($root, $data)">x</button>
+                <br>
+                <input type="number" placeholder="length" data-bind="value: length" step="0.01">
+                <br>
+                <input type="number" placeholder="rotation" data-bind="value: rotation" step="1">
+                <br>
+                <select data-bind="value: parent, foreach: $root.bones" placeholder="parent">
+                    <option data-bind="value: name, text: name"></option>
+                </select>
+            </li>
+        </ul>
+        <button class="create-button" data-bind="click: $root.addBone">New</button>
+    </div>
+
+    <div id="display">
+        <div class="inner">
+        </div>
+    </div>
+</body>
+
+<script>
+animation.addBone(animation);
+animation.addKeyFrame(animation);
+animation.bones()[0].name('ROOT');
+ko.applyBindings(animation);
+var renderer = window.setInterval(function() {
+    render(animation)
+}, 20);
+</script>
+
+</html>
